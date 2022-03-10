@@ -80,7 +80,7 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
             loss_arr.append(loss.item())
-            exit()
+#             exit()
 
         print(f"Epoch: {epoch}-------Loss: {np.mean(loss_arr)}")
         file = open(log,'a+')
