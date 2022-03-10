@@ -23,7 +23,7 @@ class LoadData(Dataset):
         self.rootDir = rootDir
         self.transform = transform
         self.frame = pd.read_csv(fileNames, dtype=str, delimiter=',', header=None)
-        print(self.frame)
+        # print(self.frame)
     
     def __len__(self):
         return len(self.frame)
