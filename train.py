@@ -59,7 +59,7 @@ if __name__ == "__main__":
     for epoch in tqdm(range(epochs)):
         loss_arr = []
         # print(f"Epoch: {epoch}-------Starting:")
-        for i, (img,emotion,source_target) in enumerate(tqdm(train_dataloader,0)):
+        for i, (img,emotion,source_target) in enumerate((train_dataloader,0)):
 
             img = img.to(device)
             emotion = emotion.to(device)
