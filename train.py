@@ -45,6 +45,11 @@ if __name__ == "__main__":
     mtl = args.mtl
     log = args.logfile
 
+    try:
+        os.makedirs("Checkpoints")
+    except:
+        print("Checkpoint Folder Exists")
+
 
     td = LoadData(files, rootDir)
     train_dataloader = DataLoader(td,batch_size=batch_size)
@@ -87,7 +92,7 @@ if __name__ == "__main__":
         file.write(f"{epoch},{np.mean(loss_arr)}\n")
         file.close()
 
-        if epoch % checkpoints == 0:
+        if (epoch+1) % checkpoints == 0:
             path = f"./Checkpoints/model_{epoch}.pth"
             torch.save(model.state_dict(), path)
 
