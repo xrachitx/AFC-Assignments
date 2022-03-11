@@ -12,6 +12,7 @@ from model import Model
 from tqdm import tqdm
 import os
 import argparse
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report, f1_score
 
 
 def parse_args():
