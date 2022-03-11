@@ -24,10 +24,12 @@ def parse_args():
     parser.add_argument('--rootDir', default=".", type=str)
     parser.add_argument('--files', default="train.csv", type=str)
     parser.add_argument('--testFile', default="test.csv", type=str)
+    parser.add_argument('--ckptFolder', default="Checkpoints", type=str)
     parser.add_argument('--device', default="cuda", type=str)
     parser.add_argument('--logfile', default="log.csv", type=str)
     parser.add_argument('--freeze_encoder', default=False, action='store_true')
     parser.add_argument('--mtl', default=False, action='store_true')
+    parser.add_argument('--gradRev', default=False, action='store_true')
     args = parser.parse_args()
 
     return args
@@ -45,13 +47,13 @@ if __name__ == "__main__":
     checkpoints = args.checkpoints
     batch_size = args.batch
     mtl = args.mtl
-    # print(mtl)
-    # exit()
+    gradRev = args.gradRev
     test_file = args.testFile
     log = args.logfile
+    ckptFolder = args.ckptFolder
 
     try:
-        os.makedirs("Checkpoints")
+        os.makedirs(ckptFolder)
     except:
         print("Checkpoint Folder Exists")
 
@@ -63,7 +65,7 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(td,batch_size=35)
     test_dataloader = list(test_dataloader)
     
-    model = Model(device,freeze_encoder)
+    model = Model(device,gradRev,mtl,freeze_encoder)
     for params in model.parameters():
         params.requires_grad = True
 
@@ -81,7 +83,7 @@ if __name__ == "__main__":
             source_target = source_target.to(device)
             model = model.to(device)
 
-            if mtl:
+            if mtl or gradRev:
                 pred_emotion,pred_classes = model(img)
                 loss_emotion = criterion(pred_emotion,emotion)
                 loss_class = criterion(pred_classes,source_target)
@@ -89,7 +91,6 @@ if __name__ == "__main__":
             else:
                 pred_emotion = model(img)
                 loss_emotion = criterion(pred_emotion,emotion)
-                # loss_class = criterion(pred_classes,source_target)
                 loss = loss_emotion
             optimizer.zero_grad()
             loss.backward()
@@ -108,8 +109,8 @@ if __name__ == "__main__":
         file.close()
 
         if (epoch+1) % checkpoints == 0:
-            path = f"./Checkpoints/model_{epoch}.pth"
+            path = f"./{ckptFolder}/model_{epoch}.pth"
             torch.save(model.state_dict(), path)
 
-    path = f"./Checkpoints/model_{epochs}.pth"
+    path = f"./{ckptFolder}/model_{epochs}.pth"
     torch.save(model.state_dict(), path)

@@ -9,11 +9,12 @@ from data_loader import LoadData
 from torch.utils.data import Dataset, DataLoader
 
 class Model(nn.Module):
-    def __init__(self,device,mtl=False,freeze_encoder=False):
+    def __init__(self,device,gradRev=False,mtl=False,freeze_encoder=False):
         super().__init__()
         self.emotion_classes = 7
         self.num_classes = 2
         self.mtl = mtl
+        self.gradRev = gradRev
         vgg = models.vgg16(pretrained = True)
         if freeze_encoder:
             for param in vgg.parameters():
@@ -28,16 +29,29 @@ class Model(nn.Module):
             nn.ReLU(),
             nn.Linear(in_features=256, out_features=84),
             nn.ReLU(),
-            nn.Linear(in_features=84, out_features=self.emotion_classes)
+            nn.Linear(in_features=84, out_features=self.emotion_classes),
+            nn.Softmax(dim=1)
         )
-        self.class_out = nn.Sequential(
-            nn.Linear(in_features=1024, out_features=256),
-            nn.ReLU(),
-            nn.Linear(in_features=256, out_features=84),
-            nn.ReLU(),
-            nn.Linear(in_features=84, out_features=self.num_classes)
-        )
-        self.softmax = nn.Softmax(dim=1)
+        if gradRev:
+            self.class_out = nn.Sequential(
+                nn.Linear(in_features=1024, out_features=256),
+                nn.ReLU(),
+                nn.Linear(in_features=256, out_features=84),
+                nn.ReLU(),
+                nn.Linear(in_features=84, out_features=self.num_classes),
+                nn.Softmax(dim=1),
+                RevGrad()
+            )
+        elif mtl:
+            self.class_out = nn.Sequential(
+                nn.Linear(in_features=1024, out_features=256),
+                nn.ReLU(),
+                nn.Linear(in_features=256, out_features=84),
+                nn.ReLU(),
+                nn.Linear(in_features=84, out_features=self.num_classes),
+                nn.Softmax(dim=1)
+            )
+        # self.softmax = nn.Softmax(dim=1)
         self.device = device
 
 
@@ -49,12 +63,12 @@ class Model(nn.Module):
         x = self.fc_layer(x)
 
         y = self.emotion_output(y)
-        y = self.softmax(y)
+        # y = self.softmax(y)
 
-        if self.mtl:
+        if self.mtl or self.gradRev:
 
             x = self.class_out(x)
-            x = self.softmax(x)
+            # x = self.softmax(x)
 
             # print(y.shape,x.shape)
             return y,x
