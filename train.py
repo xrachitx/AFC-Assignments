@@ -52,6 +52,14 @@ if __name__ == "__main__":
     log = args.logfile
     ckptFolder = args.ckptFolder
 
+    if not (mtl or gradRev):
+        ttype = "Baseline"
+    elif mtl and not gradRev:
+        ttype = "MTL"
+    elif gradRev and not mtl:
+        ttype = "Gradient Reversal"
+    print(f"Training type: {ttype}")
+
     try:
         os.makedirs(ckptFolder)
     except:
@@ -66,6 +74,7 @@ if __name__ == "__main__":
     test_dataloader = list(test_dataloader)
     
     model = Model(device,gradRev,mtl,freeze_encoder)
+    print(model)
     for params in model.parameters():
         params.requires_grad = True
 
@@ -104,7 +113,7 @@ if __name__ == "__main__":
         f1 = f1_score(emotion.cpu().numpy(),torch.argmax(pred_emotion,1).cpu().numpy(),labels=[0,1,2,3,4,5,6],average="micro")
         acc = accuracy_score(emotion.cpu().numpy(),torch.argmax(pred_emotion,1).cpu().numpy())
         print(f"Epoch: {epoch}-------Loss: {np.mean(loss_arr)}-------Test F1: {f1}-------Test Accuracy: {acc}")
-        file = open(log,'a+')
+        file = open(f"./{ckptFolder}/{log}",'a+')
         file.write(f"{epoch},{np.mean(loss_arr)},{f1},{acc}\n")
         file.close()
 
