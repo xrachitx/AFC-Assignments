@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument('--lr', default=1e-5, type=float)
     parser.add_argument('--rootDir', default=".", type=str)
     parser.add_argument('--files', default="train.csv", type=str)
+    parser.add_argument('--testFile', default="test.csv", type=str)
     parser.add_argument('--device', default="cuda", type=str)
     parser.add_argument('--logfile', default="log.csv", type=str)
     parser.add_argument('--freeze_encoder', default=False, type=bool)
@@ -43,6 +44,7 @@ if __name__ == "__main__":
     checkpoints = args.checkpoints
     batch_size = args.batch
     mtl = args.mtl
+    test_file = args.testFile
     log = args.logfile
 
     try:
@@ -53,6 +55,11 @@ if __name__ == "__main__":
 
     td = LoadData(files, rootDir)
     train_dataloader = DataLoader(td,batch_size=batch_size)
+    
+    td = LoadData(test_file, rootDir)
+    test_dataloader = DataLoader(td,batch_size=35)
+    test_dataloader = list(test_dataloader)
+    
     model = Model(device,freeze_encoder)
     for params in model.parameters():
         params.requires_grad = True
@@ -86,10 +93,15 @@ if __name__ == "__main__":
             optimizer.step()
             loss_arr.append(loss.item())
 #             exit()
-
-        print(f"Epoch: {epoch}-------Loss: {np.mean(loss_arr)}")
+        (img,label,s) = test_dataloader[idx]
+        img = img.cuda()
+        label = label.cuda()
+        out = net(img)
+        f1 = f1_score(label.cpu().numpy(),torch.argmax(out,1).cpu().numpy(),labels=[0,1,2,3,4,5,6],average="micro")
+        acc = accuracy_score(label.cpu().numpy(),torch.argmax(out,1).cpu().numpy())
+        print(f"Epoch: {epoch}-------Loss: {np.mean(loss_arr)}-------Test F1: {f1}-------Test Accuracy: {acc}")
         file = open(log,'a+')
-        file.write(f"{epoch},{np.mean(loss_arr)}\n")
+        file.write(f"{epoch},{np.mean(loss_arr)},{f1},{acc}\n")
         file.close()
 
         if (epoch+1) % checkpoints == 0:
