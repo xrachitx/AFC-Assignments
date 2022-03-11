@@ -26,8 +26,8 @@ def parse_args():
     parser.add_argument('--testFile', default="test.csv", type=str)
     parser.add_argument('--device', default="cuda", type=str)
     parser.add_argument('--logfile', default="log.csv", type=str)
-    parser.add_argument('--freeze_encoder', default=False, type=bool)
-    parser.add_argument('--mtl', default=False, type=bool)
+    parser.add_argument('--freeze_encoder', default=False, action='store_true')
+    parser.add_argument('--mtl', default=False, action='store_true')
     args = parser.parse_args()
 
     return args
@@ -45,6 +45,8 @@ if __name__ == "__main__":
     checkpoints = args.checkpoints
     batch_size = args.batch
     mtl = args.mtl
+    # print(mtl)
+    # exit()
     test_file = args.testFile
     log = args.logfile
 
