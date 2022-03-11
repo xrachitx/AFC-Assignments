@@ -93,12 +93,12 @@ if __name__ == "__main__":
             optimizer.step()
             loss_arr.append(loss.item())
 #             exit()
-        (img,label,s) = test_dataloader[idx]
+        (img,emotion,source_target) = test_dataloader[0]
         img = img.cuda()
-        label = label.cuda()
-        out = net(img)
-        f1 = f1_score(label.cpu().numpy(),torch.argmax(out,1).cpu().numpy(),labels=[0,1,2,3,4,5,6],average="micro")
-        acc = accuracy_score(label.cpu().numpy(),torch.argmax(out,1).cpu().numpy())
+        emotion = emotion.cuda()
+        pred_emotion = net(img)
+        f1 = f1_score(emotion.cpu().numpy(),torch.argmax(pred_emotion,1).cpu().numpy(),labels=[0,1,2,3,4,5,6],average="micro")
+        acc = accuracy_score(emotion.cpu().numpy(),torch.argmax(pred_emotion,1).cpu().numpy())
         print(f"Epoch: {epoch}-------Loss: {np.mean(loss_arr)}-------Test F1: {f1}-------Test Accuracy: {acc}")
         file = open(log,'a+')
         file.write(f"{epoch},{np.mean(loss_arr)},{f1},{acc}\n")
