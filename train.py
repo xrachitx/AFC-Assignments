@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
             if mtl or gradRev:
                 pred_emotion,pred_classes = model(img)
-                print(pred_emotion,pred_classes)
+                # print(pred_emotion,pred_classes)
                 loss_emotion = criterion(pred_emotion,emotion)
                 loss_class = criterion(pred_classes,source_target)
                 loss = loss_emotion+loss_class
@@ -110,7 +110,10 @@ if __name__ == "__main__":
         (img,emotion,source_target) = test_dataloader[0]
         img = img.cuda()
         emotion = emotion.cuda()
-        pred_emotion = model(img)
+        if mtl or gradRev:
+            pred_emotion,_ = model(img)
+        else:
+            pred_emotion = model(img)
         f1 = f1_score(emotion.cpu().numpy(),torch.argmax(pred_emotion,1).cpu().numpy(),labels=[0,1,2,3,4,5,6],average="micro")
         acc = accuracy_score(emotion.cpu().numpy(),torch.argmax(pred_emotion,1).cpu().numpy())
         print(f"Epoch: {epoch}-------Loss: {np.mean(loss_arr)}-------Test F1: {f1}-------Test Accuracy: {acc}")
