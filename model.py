@@ -7,6 +7,7 @@ import cv2
 from torch.autograd import Variable
 from data_loader import LoadData
 from torch.utils.data import Dataset, DataLoader
+from pytorch_revgrad import RevGrad
 
 class Model(nn.Module):
     def __init__(self,device,gradRev=False,mtl=False,freeze_encoder=False):
