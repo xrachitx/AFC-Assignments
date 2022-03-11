@@ -1,0 +1,7 @@
+data/
+data.zip
+*.csv
+Checkpoints/
+log.csv
+baseline/
+__pycache__/
